@@ -381,19 +381,41 @@ export function ZeroDistractionForm({ accentColor, serviceAreas, disqualifiedPro
         ? `legacy_lead_${emailNorm.slice(0, 16)}`
         : `legacy_lead_anon_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
 
-      // 4. Fire Meta Lead event from the browser (was missing on /v3 entirely).
-      //    Value tells Andromeda how good this lead is, qualified=true keeps
-      //    optimization aligned to true conversions only.
+      // 4. Real qualification for the Meta fire. Hard-DQ screens already block
+      //    not-owner / exploring / recently-bought / excellent-condition before
+      //    submit; the residual unqualified cases here are disqualified property
+      //    types and already-listed homes. Mirrors survey-card's
+      //    isQualifiedForMeta, adapted to this form's answer ids.
+      const QUALIFIED_WHO = ["owner", "part-owner", "family"]
+      const qualified =
+        !disqualifiedPropertyTypes.includes(form.propertyType) &&
+        form.listedOnMarket === "no" &&
+        QUALIFIED_WHO.includes(form.whoAreYou) &&
+        form.condition !== "excellent"
+
+      //    Qualified leads fire the standard Lead (value tells Andromeda how
+      //    good the lead is); unqualified leads fire the custom LeadLowIntent
+      //    instead, so Lead optimization stays aligned to true conversions only.
       if (typeof window !== "undefined" && window.fbq) {
-        window.fbq("track", "Lead", {
-          value: score.meta_value,
-          currency: "USD",
-          qualified: true,
-          lead_score: score.lead_score,
-          lead_quality: score.lead_quality,
-          content_name: "Cash Offer Request",
-          content_category: "cash_buyer_legacy",
-        }, { eventID })
+        if (qualified) {
+          window.fbq("track", "Lead", {
+            value: score.meta_value,
+            currency: "USD",
+            qualified,
+            lead_score: score.lead_score,
+            lead_quality: score.lead_quality,
+            content_name: "Cash Offer Request",
+            content_category: "cash_buyer_legacy",
+          }, { eventID })
+        } else {
+          window.fbq("trackCustom", "LeadLowIntent", {
+            qualified,
+            lead_score: score.lead_score,
+            lead_quality: score.lead_quality,
+            content_name: "Cash Offer Request",
+            content_category: "cash_buyer_legacy",
+          }, { eventID })
+        }
       }
 
       // 5. Build the full payload n8n will fan out to Resimpli / Discord /
@@ -424,7 +446,7 @@ export function ZeroDistractionForm({ accentColor, serviceAreas, disqualifiedPro
 
         // Meta dedup
         event_id: eventID,
-        qualified: true,
+        qualified,
 
         // Attribution / tracking
         utm_source:   tracking.utm_source   ?? "",
@@ -469,7 +491,7 @@ export function ZeroDistractionForm({ accentColor, serviceAreas, disqualifiedPro
         listedOnMarket: form.listedOnMarket,
         // meta_* aliases (CRM contract expects these names)
         meta_event_id: eventID,
-        meta_event_name: "Lead",
+        meta_event_name: qualified ? "Lead" : "LeadLowIntent",
         meta_value: score.meta_value,
         // single-stage CRM fields Legacy's contract expects
         source: "Survey Form",
