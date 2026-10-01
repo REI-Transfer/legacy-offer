@@ -3,6 +3,7 @@ import Link from "next/link"
 import { CheckCircle2, Phone, MessageSquare } from "lucide-react"
 import config from "@/lib/config"
 import { ClickToPlayVideo } from "@/components/thankyou/click-to-play-video"
+import { SellerVideos } from "@/components/thankyou/seller-videos"
 import { ContactCTA } from "@/components/article/contact-cta"
 import { ARTICLES } from "@/lib/articles"
 import { isYouTubeUrl, toYouTubeEmbed } from "@/lib/youtube"
@@ -188,6 +189,12 @@ function ThankYouV2() {
           </div>
         </section>
       )}
+
+      <section className="bg-[#FAFAF9]">
+        <div className="mx-auto max-w-4xl px-4 pb-14 md:pb-20">
+          <SellerVideos accentColor={config.accentColor} />
+        </div>
+      </section>
 
       {SHOW_ARTICLES && (
         <section className="bg-white border-t border-gray-200">
@@ -427,6 +434,9 @@ function ThankYouV1() {
             </p>
           </div>
         </div>
+
+        {/* Seller story videos from the client's YouTube channel */}
+        <SellerVideos accentColor={config.accentColor} />
 
         {/* While you wait: advertorial reads */}
         <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-6 md:p-8 mb-6">
