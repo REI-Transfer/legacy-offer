@@ -112,6 +112,8 @@ const OWNERSHIP_LENGTH_OPTIONS = [
   { id: "5-to-10", label: "5 to 10 years", icon: Anchor },
   { id: "10-plus", label: "10+ years", icon: Crown },
 ]
+// Owned under 5 years = disqualified (matches /v3's recentlyBought rule).
+const RECENTLY_OWNED_IDS = ["less-than-3", "3-to-5"]
 
 // ─── Lead scoring (browser-side) ───────────────────────────────────────
 // Standard scoring matrix used across all REI Transfer client surveys.
@@ -140,7 +142,8 @@ function isQualifiedForMeta(d: SurveyData): boolean {
   const okListed = d.listedOnMarket === 'not-listed'
   const okOwner = d.isLegalOwner !== 'no'
   const okCondition = d.condition !== 'excellent'
-  return okType && okListed && okOwner && okCondition
+  const okOwnership = !RECENTLY_OWNED_IDS.includes(d.ownershipLength)
+  return okType && okListed && okOwner && okCondition && okOwnership
 }
 function leadQuality(score: number): 'premium' | 'standard' | 'low' {
   if (score >= 6) return 'premium'
@@ -152,6 +155,7 @@ function disqualifyReasonFor(d: SurveyData): string {
   if (d.listedOnMarket !== 'not-listed') return 'listed'
   if (d.isLegalOwner === 'no') return 'not_owner'
   if (d.condition === 'excellent') return 'excellent_condition'
+  if (RECENTLY_OWNED_IDS.includes(d.ownershipLength)) return 'recently_owned'
   return 'unknown'
 }
 // ──────────────────────────────────────────────────────────────────────
@@ -422,6 +426,10 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
       setTimeout(() => { setDisqualifyReason("excellentCondition"); setIsDisqualified(true) }, 300)
       return
     }
+    if (field === "ownershipLength" && RECENTLY_OWNED_IDS.includes(value)) {
+      setTimeout(() => { setDisqualifyReason("recentlyOwned"); setIsDisqualified(true) }, 300)
+      return
+    }
 
     setTimeout(() => { if (step < totalSteps) setStep(step + 1) }, 300)
   }
@@ -472,6 +480,11 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
       excellentCondition: {
         title: "We're Unable to Assist",
         message: "We focus on homeowners whose properties need some work. Homes in excellent, move-in-ready condition are usually a better fit for a traditional sale.",
+        detail: "If your situation is unique, feel free to give us a call and we'll see what we can do.",
+      },
+      recentlyOwned: {
+        title: "We're Unable to Assist",
+        message: "We focus on homeowners who have owned their home for 5 years or more. Based on your answers, a traditional listing with an agent will likely get you more for this house than a cash sale.",
         detail: "If your situation is unique, feel free to give us a call and we'll see what we can do.",
       },
       notOwner: {
