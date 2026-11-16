@@ -262,7 +262,7 @@ function StepHeader({ children }: { children: React.ReactNode }) {
 
 export function ZeroDistractionForm({ accentColor, serviceAreas, disqualifiedPropertyTypes, phoneHref, phoneDisplay }: Props) {
   const [step, setStep] = useState(1)
-  const TOTAL_STEPS = 9
+  const TOTAL_STEPS = 8
   const [outsideAreaError, setOutsideAreaError] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState("")
@@ -631,19 +631,8 @@ export function ZeroDistractionForm({ accentColor, serviceAreas, disqualifiedPro
       )}
 
       {/* Step 4 — Timeline to sell */}
-      {step === 4 && (
-        <div>
-          <StepHeader>How soon would you like to sell?</StepHeader>
-          <div className="space-y-3">
-            {TIMELINE_OPTIONS.map(c => (
-              <ChoiceButton key={c.id} accentColor={accentColor} choice={c} selected={form.timeline === c.id} onClick={() => pickAndAdvance("timeline", c.id)} />
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Step 5 — Years owned */}
-      {step === 5 && (
+      {step === 4 && (
         <div>
           <StepHeader>How long have you owned the property?</StepHeader>
           <div className="space-y-3">
@@ -655,7 +644,7 @@ export function ZeroDistractionForm({ accentColor, serviceAreas, disqualifiedPro
       )}
 
       {/* Step 6 — Reason for selling */}
-      {step === 6 && (
+      {step === 5 && (
         <div>
           <StepHeader>What&apos;s the main reason for selling?</StepHeader>
           <div className="space-y-3">
@@ -667,7 +656,7 @@ export function ZeroDistractionForm({ accentColor, serviceAreas, disqualifiedPro
       )}
 
       {/* Step 7 — Condition (two-line choice with sub-copy) */}
-      {step === 7 && (
+      {step === 6 && (
         <div>
           <StepHeader>How would you describe the condition?</StepHeader>
           <div className="space-y-3">
@@ -714,7 +703,7 @@ export function ZeroDistractionForm({ accentColor, serviceAreas, disqualifiedPro
       )}
 
       {/* Step 8 — Address (was step 9 before asking-price was retired) */}
-      {step === 8 && (
+      {step === 7 && (
         <div>
           <StepHeader>What&apos;s the property address?</StepHeader>
           <div className="space-y-3">
@@ -750,7 +739,7 @@ export function ZeroDistractionForm({ accentColor, serviceAreas, disqualifiedPro
       )}
 
       {/* Step 9 — Contact info → submit (First, Last, Email, Phone in that order) */}
-      {step === 9 && (
+      {step === 8 && (
         <div>
           <StepHeader>Who should we send the offer to?</StepHeader>
           <div className="space-y-4">
@@ -855,7 +844,7 @@ export function ZeroDistractionForm({ accentColor, serviceAreas, disqualifiedPro
       )}
 
       {/* Back link — except on step 1 and the final submit step (9) */}
-      {step > 1 && step < 9 && (
+      {step > 1 && step < 8 && (
         <button
           type="button"
           onClick={() => setStep(s => Math.max(s - 1, 1))}
