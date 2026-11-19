@@ -78,7 +78,7 @@ export default function HomePage() {
 
         {/* The form — Legacy's existing SurveyCard (submit/scoring/pixel unchanged),
             reskinned to the v3 look. Accent is passed as a prop (no CSS-var dependency). */}
-        <SurveyCard
+        <SurveyCard recordCompanyName={config.companyName}
           accentColor={config.accentColor}
           phoneDisplay={config.phoneDisplay}
           phoneHref={config.phoneHref}
